@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Patient table
+model Patient {
+  Patient_ID        Int           @id @default(autoincrement())
+  Image             String?
+  Phone_Number      String?
+  Email             String
+  Patient_Name      String?
+  Address           String?
+  Blood_Group       String?
+  Password          String
+  DOB               DateTime?
+  Gender            String?
+  Registration_Date DateTime      @default(now())
+  Appointments      Appointment[]
+  Payments          Payment[]
+  Reviews           Review[]
+  Test              Test[]
+}
+
+// Doctor table
+model Doctor {
+  Doctor_ID      Int              @id @default(autoincrement())
+  Image          String?
+  Phone_Number   String?
+  Email          String
+  Doctor_Name    String?
+  Address        String?
+  Bio            String?
+  Password       String?
+  Speciality     String?
+  Timeslot_time  String?
+  Ticket_Price   Float?
+  Appointments   Appointment[]
+  Departments    Department[]
+  Tests          Test[]
+  Reviews        Review[]
+  Experiences    Experiences[]
+  Qualifications Qualifications[]
+  Time_Slots Time_Slots[]
+}
+
+// Appointment table
+model Appointment {
+  Appointment_ID Int               @id @default(autoincrement())
+  Date           DateTime
+  Status         AppointmentStatus
+  Patient_ID     Int
+  Doctor_ID      Int
+  Payments       Payment[]
+
+  //foreign key 
+
+  Patient Patient @relation(fields: [Patient_ID], references: [Patient_ID])
+  Doctor  Doctor  @relation(fields: [Doctor_ID], references: [Doctor_ID])
+}
+
+enum AppointmentStatus {
+  Paid
+  Unpaid
+}
+
+// Department table
+model Department {
+  Department_ID   Int    @id @default(autoincrement())
+  Doctor_ID       Int
+  Department_Type String
+
+  Doctor Doctor @relation(fields: [Doctor_ID], references: [Doctor_ID])
+}
+
+// Payment table
+model Payment {
+  Payment_ID        Int               @id @default(autoincrement())
+  Status            PaymentStatus
+  Tests_ID          Int?
+  Method            String
+  Amount            Float
+  Appointment_ID    Int?
+  Date              DateTime
+  Payment_Details   Payment_details[]
+  patientPatient_ID Int?
+  Tests             Test?             @relation(fields: [Tests_ID], references: [Test_ID])
+  Appointment       Appointment?      @relation(fields: [Appointment_ID], references: [Appointment_ID])
+  Patient           Patient?          @relation(fields: [patientPatient_ID], references: [Patient_ID])
+}
+
+enum PaymentStatus {
+  Paid
+  Unpaid
+}
+
+// Payment_details table
+model Payment_details {
+  Payment_Details_ID Int     @id @default(autoincrement())
+  Amount             Float
+  Payment_ID         Int
+  Payment            Payment @relation(fields: [Payment_ID], references: [Payment_ID])
+}
+
+// Test table
+model Test {
+  Test_ID    Int        @id @default(autoincrement())
+  Doctor_ID  Int
+  Date       DateTime
+  Status     TestStatus
+  Patient_ID Int
+  Payment    Payment[]
+  Doctor     Doctor     @relation(fields: [Doctor_ID], references: [Doctor_ID])
+  Patient    Patient    @relation(fields: [Patient_ID], references: [Patient_ID])
+}
+
+enum TestStatus {
+  Active
+  Disactive
+}
+
+// Review table
+model Review {
+  Review_ID  Int     @id @default(autoincrement())
+  Rating     Float
+  Comment    String
+  Patient_ID Int
+  Doctor_ID  Int
+  Patient    Patient @relation(fields: [Patient_ID], references: [Patient_ID])
+  Doctor     Doctor  @relation(fields: [Doctor_ID], references: [Doctor_ID])
+}
+
+model Qualifications {
+  Qualification_ID Int    @id @default(autoincrement())
+  Degree           String
+  University       String
+  Doctor_ID        Int
+  Doctor           Doctor @relation(fields: [Doctor_ID], references: [Doctor_ID])
+}
+
+model Experiences {
+  Experience_ID Int      @id @default(autoincrement())
+  Start_Date    DateTime
+  End_Date      DateTime
+  Position      String
+  Hospital      String
+  Doctor_ID     Int
+  Doctor        Doctor   @relation(fields: [Doctor_ID], references: [Doctor_ID])
+}
+
+model Time_Slots{
+  Time_Slots_ID Int      @id @default(autoincrement())
+  Day String
+  Start_Time String
+  End_Time String
+  Doctor_ID     Int
+  Doctor        Doctor   @relation(fields: [Doctor_ID], references: [Doctor_ID])
+}
